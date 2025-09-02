@@ -6,5 +6,5 @@ resources:
   - operator/subscription.yaml
   - operator/og.yaml
   - operator/operator-ns.yaml
-  - resources/instance.yaml
+  - resources/aap-controller.yaml
 
