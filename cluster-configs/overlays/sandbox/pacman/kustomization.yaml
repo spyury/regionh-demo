@@ -6,6 +6,9 @@ resources:
   - "../../../base/pacman/"
 
 # Patch the application to change the cluster specific details
+
+namespace: pacman-demo
+
 patches:
   - path: patch-pacman.yaml
     target:
