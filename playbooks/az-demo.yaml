@@ -1,0 +1,7 @@
+- name: Playbook to configure Azure VMs
+  hosts: all
+  become: false
+  gather_facts: true
+  tasks:
+    - name: whoami
+      ansible.builtin.command: "whoami"
