@@ -24,3 +24,14 @@
            
   roles:
     - infra.aap_configuration.dispatch
+    
+  tasks:
+    - name: Create Role Definition
+      ansible.controller.role_definition:
+        name: test-role-def
+        permissions:
+          - awx.view_jobtemplate
+          - awx.execute_jobtemplate
+        content_type: awx.jobtemplate
+        description: role definition to view and execute jt
+        state: present
