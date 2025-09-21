@@ -13,7 +13,7 @@
     controller_roles:
       - team: Demo-roles-team
         organization: Demo-roles-org
-        role:
+        roles:
            - read
            - execute
   roles:
