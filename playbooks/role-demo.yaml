@@ -10,5 +10,11 @@
     aap_teams:
     - name: Demo-roles-team
       organization: Demo-roles-org
+    controller_roles:
+      - team: Demo-roles-team
+        organization: Demo-roles-org
+        role:
+           - read
+           - update
   roles:
     - infra.aap_configuration.dispatch
