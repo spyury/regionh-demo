@@ -1,0 +1,14 @@
+- name: Playbook to configure aap roles
+  hosts: localhost
+  connection: local
+  become: false
+  gather_facts: false
+  vars:
+    aap_organizations:
+    - name: Demo-roles-org
+      description: Demo org
+    aap_teams:
+    - name: Demo-roles-team
+      organization: Demo-roles-org
+  roles:
+    - infra.aap_configuration.dispatch
