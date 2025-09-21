@@ -15,6 +15,6 @@
         organization: Demo-roles-org
         role:
            - read
-           - update
+           - execute
   roles:
     - infra.aap_configuration.dispatch
