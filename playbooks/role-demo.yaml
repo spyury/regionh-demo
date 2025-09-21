@@ -19,7 +19,8 @@
       - team: Demo-roles-team
         inventory: inv1
         roles:
-           - inventory_admin
+           - use_role
+           - read_role
            
   roles:
     - infra.aap_configuration.dispatch
