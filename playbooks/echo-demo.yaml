@@ -1,0 +1,8 @@
+- name: Playbook to configure Azure VMs
+  hosts: localhost
+  become: false
+  gather_facts: true
+  tasks:
+    - name: debug
+      ansible.builtin.debug: 
+        msg: "hello"
