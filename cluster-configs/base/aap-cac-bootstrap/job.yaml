@@ -1,0 +1,91 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: aap-cac-bootstrap-job
+  namespace: aap
+spec:
+  template:
+    metadata:
+    spec:
+      restartPolicy: Never
+      containers:
+      - command:
+          - /bin/bash
+          - -c
+          - |
+            #!/bin/bash
+            set -eo pipefail
+            cd /opt/cac/
+            ansible-galaxy collection install -r requirements.yaml
+            
+            
+            ansible-playbook playbook.yaml -e @./vars.yaml -e aap_hostname="http://aap" -e aap_username=admin -e aap_password=$(cat /etc/cac/password)
+        image: patch_me
+        imagePullPolicy: IfNotPresent
+        name: aap-cac-bootstrap-job
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        volumeMounts:
+        - mountPath: /etc/tower/conf.d/credentials.py
+          name: aap-controller-application-credentials
+          readOnly: true
+          subPath: credentials.py
+        - mountPath: /etc/tower/SECRET_KEY
+          name: aap-controller-secret-key
+          readOnly: true
+          subPath: SECRET_KEY
+        - mountPath: /etc/tower/settings.py
+          name: aap-controller-settings
+          readOnly: true
+          subPath: settings.py
+        - mountPath: /etc/cac/
+          name: aap-admin-password
+          readOnly: true
+        - mountPath: /opt/cac/
+          name: cac-bootstrap
+        - mountPath: /opt/cac-bootstrap-repo/
+          name: cac-bootstrap-repo
+      serviceAccount: aap-controller
+      serviceAccountName: aap-controller
+      volumes:
+      - name: aap-controller-application-credentials
+        secret:
+          defaultMode: 420
+          items:
+          - key: credentials.py
+            path: credentials.py
+          - key: ldap.py
+            path: ldap.py
+          - key: execution_environments.py
+            path: execution_environments.py
+          secretName: aap-controller-app-credentials
+      - name: aap-controller-secret-key
+        secret:
+          defaultMode: 420
+          items:
+          - key: secret_key
+            path: SECRET_KEY
+          secretName: aap-controller-secret-key
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: settings
+            path: settings.py
+          name: aap-controller-automationcontroller-configmap
+        name: aap-controller-settings
+      - name: aap-admin-password
+        secret:
+          defaultMode: 420
+          secretName: aap-admin-password
+      - name: cac-bootstrap
+        configMap:
+          defaultMode: 420
+          name: cac-bootstrap
+      - name: cac-bootstrap-repo
+        secret:
+          defaultMode: 420
+          secretName: cac-bootstrap-repo
+      
+        

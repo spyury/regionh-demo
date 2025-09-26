@@ -1,0 +1,65 @@
+---
+default:
+  app:
+    annotations:
+      argocd.argoproj.io/compare-options: IgnoreExtraneous
+    enabled: true
+    enableAutoSync: false  # temporary
+    autoSyncPrune: false
+    project: cluster-config
+    destination:
+      namespace: openshift-gitops
+      server: https://kubernetes.default.svc
+    source:
+      repoURL: https://github.com/RegionH/Unix-OpenShift-GitOps.git 
+      targetRevision: bootstrap
+    syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - PruneLast=true
+      - ServerSideApply=true
+      - FailOnSharedResource=true
+      - RespectIgnoreDifferences=true
+      - CreateNamespace=true
+    syncPolicyRetry:
+      limit: -1 # number of failed sync attempt retries; unlimited number of attempts if less than 0
+      backoff:
+        duration: 5s # the amount to back off. Default unit is seconds, but could also be a duration (e.g. "2m", "1h")
+        factor: 2 # a factor to multiply the base duration after each failed retry
+        maxDuration: 10m # the maximum amount of time allowed for the backoff strategy
+
+projects:
+  cluster-config:
+    annotations:
+      argocd.argoproj.io/sync-wave: '-2'
+    description: Project for overall cluster configuration
+    namespace: openshift-gitops
+    sourceRepos:
+      - https://github.com/RegionH/Unix-OpenShift-GitOps.git 
+    destinations: |
+      - namespace: '*'
+        server: https://kubernetes.default.svc
+    extraFields: |
+      clusterResourceWhitelist:
+        - group: '*'
+          kind: '*'
+
+applications:
+
+  pacman:
+    annotations:
+      argocd.argoproj.io/sync-wave: '3'
+    source:
+      path: cluster-configs/overlays/tocp01/pacman
+
+  aap:
+    annotations:
+      argocd.argoproj.io/sync-wave: '3'
+    source:
+      path: cluster-configs/overlays/tocp01/aap      
+
+# Add aap configuration organization, credentials, projects, job in priority order 4 from git branch feature/aap-cac-init
+  aap-cac-bootstrap:
+    annotations:
+      argocd.argoproj.io/sync-wave: '4'
+    source:
+      path: cluster-configs/overlays/tocp01/aap-cac-bootstrap  

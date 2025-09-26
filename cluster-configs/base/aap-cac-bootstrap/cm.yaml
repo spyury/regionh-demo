@@ -1,0 +1,75 @@
+apiVersion: v1
+data:
+  vars.yaml: |-
+    aap_configuration_secure_logging: false
+    controller_configuration_organizations_secure_logging: false
+    controller_configuration_credential_types_secure_logging: false
+    controller_configuration_credentials_secure_logging: false
+    controller_configuration_execution_environments_secure_logging: false
+    controller_configuration_projects_secure_logging: false
+    controller_configuration_inventories_secure_logging: false
+    cas_secure_logging: false
+
+    aap_organizations:
+      - name: Platform Administrators
+        description: Root organization Platform Administrators
+
+    controller_credentials:
+      - name: OA-Platform-GitOps-creds
+        description: Credentials for OA-Platform-GitOps
+        organization: Platform Administrators
+        credential_type: GitHub App Installation Access Token Lookup
+        inputs:
+          app_or_client_id: "{{ lookup('file', '/opt/cac-bootstrap-repo/githubAppID') }}"
+          install_id: "{{ lookup('file', '/opt/cac-bootstrap-repo/githubAppInstallationID') }}"
+          private_rsa_key: "{{ lookup('file', '/opt/cac-bootstrap-repo/githubAppPrivateKey') }}"
+          github_api_url: "https://api.github.com"
+
+      - name: OA-Platform-GitOps-creds-scm
+        description: Credentials for OA-Platform-GitOps Source Control
+        organization: Platform Administrators
+        credential_type: Source Control
+        inputs:
+          username: "x-access-token"
+
+    controller_credential_input_sources:
+      - source_credential: OA-Platform-GitOps-creds
+        target_credential: OA-Platform-GitOps-creds-scm
+        input_field_name: password
+
+
+    controller_projects:
+      - name: Platform Administrators Bootstrap
+        description: Bootstrap AAP CaC
+        organization: Platform Administrators
+        default_environment: Default execution environment
+        scm_type: git
+        scm_url: https://github.com/RegionH/OA-Platform-GitOps.git
+        credential: OA-Platform-GitOps-creds-scm 
+        scm_clean: true
+        scm_update_on_launch: true
+        scm_update_cache_timeout: "30"
+        update_project: true
+
+
+  playbook.yaml: |-
+    - name: Playbook to configure ansible controller post installation
+      hosts: localhost
+      connection: local
+      become: false
+      gather_facts: false
+      tasks:
+      roles:
+        - infra.aap_configuration.dispatch
+  requirements.yaml: |-
+    ---
+    collections:
+      - name: infra.aap_configuration
+  
+  requirements.txt: |-
+    # Specify pip requirements here
+
+kind: ConfigMap
+metadata:
+  name: cac-bootstrap
+  namespace: aap

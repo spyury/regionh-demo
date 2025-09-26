@@ -1,0 +1,26 @@
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: cac-bootstrap-repo
+  namespace: aap
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: azure-secret-store
+
+  target:
+    name: cac-bootstrap-repo
+    creationPolicy: Owner
+    template:
+      data:
+        githubAppPrivateKey: '{{ .privkey | b64dec }}'
+        type: git
+        url: patch_me
+        githubAppID: "patch_me"
+        githubAppInstallationID: "patch_me"
+  data:
+  - secretKey: privkey
+    remoteRef:
+      key: patch_me
+

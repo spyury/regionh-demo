@@ -1,0 +1,53 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# namespace: example-1 # Use this field to overwrite namespace for the manifests
+resources:
+  - "../../../base/aap-cac-bootstrap/"
+
+patches:
+  - target:
+      kind: ExternalSecret
+      name: cac-bootstrap-repo 
+    patch: |-
+      - op: replace
+        path: /spec/target/template/data/url
+        value: https://github.com/RegionH/OA-Platform-GitOps.git
+
+      - op: replace
+        path: /spec/target/template/data/githubAppID
+        value: "1858527"
+
+      - op: replace
+        path: /spec/target/template/data/githubAppInstallationID
+        value: "83216162"
+
+      - op: replace
+        path: /spec/data/0/remoteRef/key
+        value: "OA-GitOps-App-PrivateKey"   # Name from Azure Key Vault
+
+  - target:
+      kind: Job
+      name: aap-cac-bootstrap-job
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: registry.redhat.io/ansible-automation-platform-25/ee-supported-rhel8@sha256:701b78f939d6ba3479b078e6c31391eed0d120c054a02170922512283fe58e02
+
+  - target:
+      kind: ExternalSecret
+      name: cac-ldap-bind-pass-es
+    patch: |-
+      - op: replace
+        path: /spec/data/0/remoteRef/key
+        value: "OA-LDAP-test-SA-secret"
+
+  - target:
+      kind: ExternalSecret
+      name: cac-oidc-pass-es
+    patch: |-
+      - op: replace
+        path: /spec/data/0/remoteRef/key
+        value: "OA-OIDC-test-secret"      
+
+

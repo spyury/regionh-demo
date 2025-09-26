@@ -1,0 +1,20 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: leonardo-test-route
+  namespace: aap
+spec:
+  host: leonardo-test.regionh.dk
+  to:
+    kind: Service
+    name: aap
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    externalCertificate:
+      name: leonardo-test-cert-key
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+

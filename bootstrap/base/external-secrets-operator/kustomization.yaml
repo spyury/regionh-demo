@@ -4,3 +4,4 @@ resources:
 - instance/ns.yaml
 - operator/subscription.yaml
 - instance/operator-config.yaml
+

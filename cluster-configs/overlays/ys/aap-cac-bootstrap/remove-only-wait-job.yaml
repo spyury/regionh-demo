@@ -1,0 +1,86 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: wait-sa
+  namespace: aap
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wait-sa-rolebinding
+  namespace: aap
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+- kind: ServiceAccount
+  name: wait-sa
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wait-job
+  namespace: aap
+spec:
+  template:
+    metadata:
+    spec:
+      restartPolicy: Never
+      containers:
+      - command:
+          - /bin/bash
+          - -c
+          - |
+            #!/bin/bash
+            set -eo pipefail
+
+            DEPLOYMENT_AAP_WEB="aap-controller-web"
+            DEPLOYMENT_AAP_GW="aap-gateway"
+            ITERATION=0
+            INTERVAL=10
+
+            while [ $ITERATION -lt 100 ]; do
+              echo "Iteration: $ITERATION"
+              READY_DEPLOYMENTS=0
+
+              READY_AAP_WEB=$(oc get deployment "$DEPLOYMENT_AAP_WEB" --ignore-not-found=true -o jsonpath='{.status.readyReplicas}')
+              DESIRED_AAP_WEB=$(oc get deployment "$DEPLOYMENT_AAP_WEB" --ignore-not-found=true -o jsonpath='{.status.replicas}')
+
+              READY_AAP_GW=$(oc get deployment "$DEPLOYMENT_AAP_GW" --ignore-not-found=true -o jsonpath='{.status.readyReplicas}')
+              DESIRED_AAP_GW=$(oc get deployment "$DEPLOYMENT_AAP_GW" --ignore-not-found=true -o jsonpath='{.status.replicas}')
+              
+              if [[ "$READY_AAP_WEB" == "$DESIRED_AAP_WEB" && -n "$READY_AAP_WEB" ]]; then
+                echo "✅ Deployment $DEPLOYMENT_AAP_WEB is up and running."
+                READY_DEPLOYMENTS=$((READY_DEPLOYMENTS+1))
+              else
+                echo "⏳ Waiting for $DEPLOYMENT_AAP_WEB... ($READY_AAP_WEB/$DESIRED_AAP_WEB ready)"
+              fi
+
+              if [[ "$READY_AAP_GW" == "$DESIRED_AAP_GW" && -n "$READY_AAP_GW" ]]; then
+                echo "✅ Deployment $DEPLOYMENT_AAP_GW is up and running."
+                READY_DEPLOYMENTS=$((READY_DEPLOYMENTS+1))
+              else
+                echo "⏳ Waiting for $DEPLOYMENT_AAP_GW... ($READY_AAP_GW/$DESIRED_AAP_GW ready)"  
+              fi
+
+              if [ $READY_DEPLOYMENTS -gt 1 ]; then
+                echo "✅ All deployments are up and running."
+                exit 0
+              fi
+              sleep $INTERVAL
+              ITERATION=$((ITERATION+1))
+            done
+            
+        image: registry.redhat.io/ansible-automation-platform-25/ee-supported-rhel8@sha256:701b78f939d6ba3479b078e6c31391eed0d120c054a02170922512283fe58e02
+        imagePullPolicy: IfNotPresent
+        name: wait-job
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+      serviceAccount: wait-sa
+      serviceAccountName: wait-sa
