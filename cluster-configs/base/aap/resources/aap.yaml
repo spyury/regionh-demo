@@ -6,7 +6,7 @@ metadata:
 spec:
   route_tls_termination_mechanism: Edge
   no_log: true
-  redis_mode: cluster
+  redis_mode: standalone
   api:
     log_level: INFO
     replicas: 1
@@ -14,3 +14,5 @@ spec:
     postgres_data_volume_init: false
     idle_disabled: false
   image_pull_policy: IfNotPresent
+  hub:
+    file_storage_access_mode: ReadWriteOnce
