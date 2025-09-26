@@ -12,15 +12,15 @@ patches:
       kind: Subscription
       name: ansible-automation-platform-operator
 
-  - target:
-      kind: AnsibleAutomationPlatform
-      name: aap 
-    patch: |-
-      - op: add
-        path: /spec/route_host
-        value: leonardo-test.regionh.dk
+#  - target:
+#      kind: AnsibleAutomationPlatform
+#      name: aap 
+#    patch: |-
+#      - op: add
+#        path: /spec/route_host
+#        value: leonardo-test.regionh.dk
 
-      - op: add
-        path: /spec/route_tls_secret
-        value: leonardo-test-cert-key
+#      - op: add
+#        path: /spec/route_tls_secret
+#        value: leonardo-test-cert-key
 
